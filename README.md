@@ -6,7 +6,7 @@ Small wrapper to automatize some github api tasks
 
 
 
-## Usage
+## Usage
 
 - `git clone https://github.com/titouanfreville/github_api_wrapper.git`
 - `cd github_api_wrapper`
