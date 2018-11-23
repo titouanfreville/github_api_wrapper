@@ -2,7 +2,9 @@ from github import Github
 from git import Repo
 import getpass
 import inquirer
+
 from spinner.spin import Spinner
+import sys
 
 
 class Repository():
@@ -31,7 +33,10 @@ class Repository():
                 print('Token Invalid: ', e)
         user = self.config.get('user', 'name')
         if not user:
-            user = input('No enter configured.\nUsername: ')
+            if (sys.version_info > (3, 0)):
+                user = input('No enter configured.\nUsername: ')
+            else:
+                user = raw_input('No enter configured.\nUsername: ')
         password = getpass.getpass('Password for user <%s>: ' % user)
         if password:
             self.__git = Github(user, password)
