@@ -1,14 +1,17 @@
 from configparser import ConfigParser
-from repository.repository import Repository
+from actions.actions import Actions
+
 
 def main():
     config = ConfigParser()
     config.read('./config.ini')
-    rep = Repository(config)
+    act = Actions(config)
+    # rep = Repository(config)
 
-    rep.__init_github_connection__()
-    rep.clones()
-
+    # rep.__init_github_connection__()
+    #rep.clones()
+    # rep.transfer()
+    act.loop()
 
 if __name__ == "__main__":
     main()

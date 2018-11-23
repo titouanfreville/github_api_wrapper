@@ -45,12 +45,18 @@ class Repository():
         self.__git = git
 
     def __fetch_repository(self):
-        repos = self.__git.get_user().get_repos()
-        self.spin.sp.description = 'Found repositories'
+        repos = list(self.__git.get_user().get_repos())
+        orgs = self.__git.get_user().get_orgs()
+        self.orgs = []
+        self.user_id = self.__git.get_user().login
+        for o in orgs:
+            self.orgs.append(o.login)
+            repos += list(o.get_repos())
+        self.spin.sp.write('Found repositories')
         dict = { }
         dict_no_owner = { }
         for repo in repos:
-            self.spin.sp.description = 'Adding repository %s to base' % repo.name
+            self.spin.sp.write('Adding repository %s to base' % repo.name)
             if not repo.owner in dict:
                 dict[ repo.owner ] = { }
             dict[ repo.owner ][ repo.name ] = repo
@@ -97,3 +103,23 @@ class Repository():
         base_path = inquirer.prompt(questions)
         clone = lambda : self.__clone_list(repo_to_clone['select'], base_path['base_path'])
         self.spin.spin_except(clone, 'Cloning repositories', spinner = 'arc')
+
+    def _transfer(self, repos, new_owner):
+        for r in repos:
+            rep = self._repos_without_owner[r]
+            rep.transfer(new_owner)
+
+    def transfer(self, owner = None):
+        repo_to_transfer = self.__select_repository(owned_by=owner, message='Select repositories to clone: ')
+        questions = [
+            inquirer.List(
+                    'transfer_to',
+                    message='Who do you wish to transfer to ?',
+                    choices=self.orgs + [self.user_id]
+                    )
+            ]
+        new_owner = inquirer.prompt(questions)
+
+        _transfer = lambda : self._transfer(repo_to_transfer['select'], new_owner['transfer_to'])
+
+        self.spin.spin_except(_transfer,'Transferring repositories to %s'%new_owner['transfer_to'])

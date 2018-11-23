@@ -12,7 +12,7 @@ class Spinner():
         }
 
     def __init__(self, text="spin", color="red"):
-        self.sp = kbi_safe_yaspin(text=text, color=color)
+        self.sp = kbi_safe_yaspin(Spinners.arc, text=text, color=color)
 
     def spin_except(self, action, description='', spinner='earth', color='red'):
         """
