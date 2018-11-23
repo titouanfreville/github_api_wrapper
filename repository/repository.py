@@ -33,11 +33,14 @@ class Repository():
                 print('Token Invalid: ', e)
         user = self.config.get('user', 'name')
         if not user:
-            if (sys.version_info > (3, 0)):
-                user = input('No enter configured.\nUsername: ')
-            else:
-                user = raw_input('No enter configured.\nUsername: ')
-        password = getpass.getpass('Password for user <%s>: ' % user)
+            question = [
+                inquirer.Text(
+                        'user',
+                        message='No token configured.\nEnter github username: '
+                        )
+                ]
+            user = inquirer.prompt(question)['user']
+        password = getpass.getpass('Password for user <%s>: \n' % user)
         if password:
             self.__git = Github(user, password)
         else:
@@ -58,32 +61,33 @@ class Repository():
             self.orgs.append(o.login)
             repos += list(o.get_repos())
         self.spin.sp.write('Found repositories')
-        dict = { }
-        dict_no_owner = { }
+        dict_repo = {}
+        dict_no_owner = {}
         for repo in repos:
             self.spin.sp.write('Adding repository %s to base' % repo.name)
-            if not repo.owner in dict:
-                dict[ repo.owner ] = { }
-            dict[ repo.owner ][ repo.name ] = repo
-            dict_no_owner[ repo.name ] = repo
-        self._repos_with_owner = dict
+            if repo.owner.login not in dict_repo:
+                dict_repo[repo.owner.login] = {}
+            dict_repo[repo.owner.login][repo.name] = repo
+            key = '{0}/{1}'.format(repo.owner.login, repo.name)
+            dict_no_owner[key] = repo
+        self._repos_with_owner = dict_repo
         self._repos_without_owner = dict_no_owner
 
     def __spin_fetch_repository(self):
-        fetch = lambda : self.__fetch_repository()
-        self.spin.spin_except(fetch, description = 'Fetching repositories')
+        fetch = lambda: self.__fetch_repository()
+        self.spin.spin_except(fetch, description='Fetching repositories')
 
-    def __select_repository(self, owned_by = None, message = 'Select repositories:'):
+    def __select_repository(self, owned_by=None, message='Select repositories:'):
         if owned_by:
-            reps = self._repos_with_owner[ 'owned_by' ]
+            reps = self._repos_with_owner['owned_by']
         else:
             reps = self._repos_without_owner
 
         questions = [
             inquirer.Checkbox(
                     'select',
-                    message = message,
-                    choices = reps.keys(),
+                    message=message,
+                    choices=reps.keys(),
                     )
             ]
 
@@ -91,12 +95,12 @@ class Repository():
 
     def __clone_list(self, repo_to_clone, base_path):
         for rep_name in repo_to_clone:
-            rep = self._repos_without_owner[ rep_name ]
+            rep = self._repos_without_owner[rep_name]
             url = rep.clone_url
             Repo.clone_from(url, "{0}/{1}".format(base_path, rep_name))
 
-    def clones(self, owner = None):
-        repo_to_clone = self.__select_repository(owned_by = owner, message = 'Select repositories to clone: ')
+    def clones(self, owner=None):
+        repo_to_clone = self.__select_repository(owned_by=owner, message='Select repositories to clone: ')
 
         questions = [
             inquirer.Path(
@@ -106,15 +110,15 @@ class Repository():
             ]
 
         base_path = inquirer.prompt(questions)
-        clone = lambda : self.__clone_list(repo_to_clone['select'], base_path['base_path'])
-        self.spin.spin_except(clone, 'Cloning repositories', spinner = 'arc')
+        clone = lambda: self.__clone_list(repo_to_clone['select'], base_path['base_path'])
+        self.spin.spin_except(clone, 'Cloning repositories', spinner='arc')
 
     def _transfer(self, repos, new_owner):
         for r in repos:
             rep = self._repos_without_owner[r]
             rep.transfer(new_owner)
 
-    def transfer(self, owner = None):
+    def transfer(self, owner=None):
         repo_to_transfer = self.__select_repository(owned_by=owner, message='Select repositories to clone: ')
         questions = [
             inquirer.List(
@@ -125,6 +129,6 @@ class Repository():
             ]
         new_owner = inquirer.prompt(questions)
 
-        _transfer = lambda : self._transfer(repo_to_transfer['select'], new_owner['transfer_to'])
+        _transfer = lambda: self._transfer(repo_to_transfer['select'], new_owner['transfer_to'])
 
-        self.spin.spin_except(_transfer,'Transferring repositories to %s'%new_owner['transfer_to'])
+        self.spin.spin_except(_transfer, 'Transferring repositories to %s' % new_owner['transfer_to'])

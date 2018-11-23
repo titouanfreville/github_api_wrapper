@@ -7,9 +7,9 @@ class Actions():
     def __init__(self, config):
         self.__rep = Repository(config)
         self.__allowed_actions = {
-            'clone': lambda : self.__rep.clones(),
-            'transfer': lambda : self.__rep.transfer(),
-            'exit': lambda : 'exit',
+            'clone'   : lambda: self.__rep.clones(),
+            'transfer': lambda: self.__rep.transfer(),
+            'exit'    : lambda: 'exit',
             }
 
     def __act(self):
@@ -17,7 +17,7 @@ class Actions():
             inquirer.List(
                     'action',
                     message='What do you want to do?',
-                    choices = self.__allowed_actions.keys(),
+                    choices=self.__allowed_actions.keys(),
                     )
             ]
         act = inquirer.prompt(questions)
@@ -30,4 +30,3 @@ class Actions():
             print(res)
             if res == 'exit':
                 exit(0)
-

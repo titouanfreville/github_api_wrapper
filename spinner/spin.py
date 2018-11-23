@@ -8,7 +8,7 @@ class Spinner():
     """
     __allowed_spinners = {
         'earth': Spinners.earth,
-        'arc': Spinners.arc,
+        'arc'  : Spinners.arc,
         }
 
     def __init__(self, text="spin", color="red"):
@@ -72,7 +72,7 @@ class Spinner():
             self.sp.fail("💥 ")
             return None
 
-    def spin_bool(self, action, description = '', spinner = 'earth', color = 'red'):
+    def spin_bool(self, action, description='', spinner='earth', color='red'):
         """
         Spin expecting action to return a boolean value and NEVER FAIL (exception are not matched)
 
